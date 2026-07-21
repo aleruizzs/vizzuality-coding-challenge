@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: emissions_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: environmental_data
+    ports:
+      - "5432:5432"
+
+  importer-service:
+    build: ./importer-service
+    container_name: importer_service
+    depends_on:
+      - postgres
+
+  query-service:
+    build: ./query-service
+    container_name: query_service
+    depends_on:
+      - postgres

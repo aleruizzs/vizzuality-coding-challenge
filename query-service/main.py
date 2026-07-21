@@ -1,0 +1,1 @@
+print("Query service starting...")

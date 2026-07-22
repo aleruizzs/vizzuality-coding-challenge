@@ -1,1 +1,0 @@
-print("Query service starting...")

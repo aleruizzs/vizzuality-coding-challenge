@@ -10,6 +10,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   importer-service:
     build: ./importer-service
@@ -19,7 +24,8 @@ services:
     volumes:
       - ./importer-service/src:/app/src
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   query-service:
     build: ./query-service
@@ -29,7 +35,13 @@ services:
     volumes:
       - ./query-service/src:/app/src
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   postgres_data:

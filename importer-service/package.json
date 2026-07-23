@@ -1,12 +1,26 @@
 {
   "name": "importer-service",
   "version": "1.0.0",
-  "description": "",
+  "description": "Basic microservice to import data from a CSV file and store it in a database",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/index.ts"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "Alejandro Ruiz Salazar",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.1.1",
+    "eslint": "^10.7.0",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
+  }
 }

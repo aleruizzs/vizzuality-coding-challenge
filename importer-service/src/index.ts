@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { checkDbConnection } from './db';
+import { checkDbConnection } from './database';
 import { config } from './config';
 
 const app = express();

@@ -7,6 +7,12 @@ export const pool = new Pool({
   user: config.db.user,
   password: config.db.pass,
   database: config.db.name,
+  max:5,
+  idleTimeoutMillis: 10000,
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle PostgreSQL client: ', err);
 });
 
 export const checkDbConnection = async (): Promise<void> => {

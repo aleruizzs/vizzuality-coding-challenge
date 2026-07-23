@@ -1,4 +1,6 @@
 import express, { Request, Response } from 'express';
+import { checkDbConnection } from './db';
+import { config } from './config';
 
 const app = express();
 
@@ -8,6 +10,7 @@ app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', service: 'importer-service' });
 });
 
-app.listen(3000, () => {
-  console.log('Importer service is running on port 3000');
+app.listen(config.port, () => {
+  console.log(`Importer service is running on port ${config.port}`);
+  checkDbConnection();
 });

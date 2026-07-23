@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { config } from './config';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
 export const pool = new Pool({
   host: config.db.host,
@@ -14,6 +15,8 @@ export const pool = new Pool({
 pool.on('error', (err) => {
   console.error('Unexpected error on idle PostgreSQL client: ', err);
 });
+
+export const db = drizzle(pool);
 
 export const checkDbConnection = async (): Promise<void> => {
   try {

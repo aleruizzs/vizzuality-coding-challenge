@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 from src.config import settings
@@ -15,3 +15,12 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def check_db_connection() -> None:
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        print("✅ Connected to PostgreSQL database")
+    except Exception as error:
+        print(f"❌ Database connection error: {error}")

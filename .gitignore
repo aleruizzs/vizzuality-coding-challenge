@@ -1,2 +1,7 @@
+# Importer service
+node_modules
+dist
+
+# Query service
 .venv
 __pycache__

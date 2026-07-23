@@ -1,9 +1,17 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from src.database import Base, engine
+from src.database import Base, check_db_connection, engine
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Environmental Data Query API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    check_db_connection()
+    yield
+
+
+app = FastAPI(title="Environmental Data Query API", lifespan=lifespan)
 
 
 @app.get("/health")

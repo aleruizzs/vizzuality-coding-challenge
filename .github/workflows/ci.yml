@@ -60,8 +60,10 @@ jobs:
 
       # 4. Check code formatting
       - name: Check code formatting with Black
-        run: black --check query-service/src
+        working-directory: query-service
+        run: black --check src
 
       # 5. Check code style
       - name: Check code style with Flake8
-        run: flake8 query-service/src
+        working-directory: query-service
+        run: flake8 src

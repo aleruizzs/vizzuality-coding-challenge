@@ -8,6 +8,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "${POSTGRES_PORT}:5432"
     healthcheck:
@@ -19,8 +20,7 @@ services:
   importer-service:
     build: ./importer-service
     container_name: importer_service
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    env_file: .env
     volumes:
       - ./importer-service/src:/app/src
     depends_on:
@@ -35,8 +35,7 @@ services:
   query-service:
     build: ./query-service
     container_name: query_service
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+    env_file: .env
     volumes:
       - ./query-service/src:/app/src
     depends_on:

@@ -7,18 +7,48 @@ on:
     branches: [ '**' ]
 
 jobs:
-  python-ci:
-    name: Python CI
+  importer-service-ci:
+    name: importer-service CI
     runs-on: ubuntu-latest
 
     steps:
       # 1. Download the repository code
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      # 2. Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        working-directory: importer-service
+        run: npm install
+
+      # 4. Check code style
+      - name: Check code style with ESLint
+        working-directory: importer-service
+        run: npm run lint
+
+      # 5. Check TypeScript compilation
+      - name: Check TypeScript compilation
+        working-directory: importer-service
+        run: npm run build
+
+  query-service-ci:
+    name: query-service CI
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Download the repository code
+      - name: Checkout code
+        uses: actions/checkout@v7
 
       # 2. Set up Python environment
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
 

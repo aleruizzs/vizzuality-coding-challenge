@@ -1,6 +1,7 @@
 # Importer service
 node_modules
 dist
+uploads
 
 # Query service
 .venv

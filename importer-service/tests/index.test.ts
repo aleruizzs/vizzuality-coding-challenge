@@ -72,7 +72,7 @@ describe('HTTP Endpoints', () => {
                 },
             };
 
-            vi.mocked(processCsvFile).mockResolvedValueOnce(mockResult as any);
+            vi.mocked(processCsvFile).mockResolvedValueOnce(mockResult);
 
             const response = await request(app)
                 .post('/upload')

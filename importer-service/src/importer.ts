@@ -15,16 +15,11 @@ interface EmissionRow {
 const COUNTRY_COLUMN = 'Country', SECTOR_COLUMN = 'Sector', PARENT_SECTOR_COLUMN = 'Parent Sector';
 const BATCH_SIZE = 1000;
 
-// Function to clean up the uploaded file after processing
-function cleanupFile(filePath: string) {
-    if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-    }
-};
 
 export async function processCsvFile(filePath: string){
     let rowsToInsert: EmissionRow[] = [];
     let totalInserted = 0;
+    let skippedRows = 0;
     let minVal: number | null = null;
     let maxVal: number | null = null;
 
@@ -34,17 +29,23 @@ export async function processCsvFile(filePath: string){
         // Read the CSV file and parse each row
         for await (const row of stream) {
             // Extract the country, sector, and parent sector from the row
-            const country = row[COUNTRY_COLUMN];
-            const sector = row[SECTOR_COLUMN];
-            const parentSector = row[PARENT_SECTOR_COLUMN] || null;
+            const country = row[COUNTRY_COLUMN]?.trim();
+            const sector = row[SECTOR_COLUMN]?.trim();
+            const parentSector = row[PARENT_SECTOR_COLUMN]?.trim() || null;
+
+            // Skip rows that don't have a valid country or sector, since these are mandatory fields
+            if (!country || !sector) {
+                skippedRows++;
+                continue;
+            }
 
             // Iterate over the keys of the row to find year columns and their corresponding values
             for (const year of Object.keys(row)) {
                 if (year !== COUNTRY_COLUMN && year !== SECTOR_COLUMN && year !== PARENT_SECTOR_COLUMN) {
                     // Ensure the year is a valid number before processing
-                    const yearNum = parseInt(year, 10);
+                    const yearNum = parseInt(year?.trim(), 10);
                     if (!isNaN(yearNum)) {
-                        const rawValue = row[year];
+                        const rawValue = row[year]?.trim();
                         const parsedValue = parseFloat(rawValue);
 
                         // If the value is not a valid number, set it to null
@@ -56,6 +57,11 @@ export async function processCsvFile(filePath: string){
                         if (value !== null) {
                             if (minVal === null || value < minVal)  minVal = value;
                             if (maxVal === null || value > maxVal) maxVal = value;
+                        }
+                        // If this row has a valid year but the value is invalid, we skip it and increment the skippedRows counter
+                        else {
+                            skippedRows++;
+                            continue;
                         }
 
                         rowsToInsert.push({
@@ -90,12 +96,15 @@ export async function processCsvFile(filePath: string){
             message: 'CSV file data saved successfully.',
             summary: {
                 totalRecords: totalInserted,
+                skippedRows: skippedRows,
                 minEmissions: minVal,
                 maxEmissions: maxVal,
             },
         };
     } finally {
         // Clean up the uploaded file after processing, regardless of success or failure
-        cleanupFile(filePath);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
     }
 }

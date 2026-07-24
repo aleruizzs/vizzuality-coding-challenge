@@ -4,10 +4,10 @@
   "description": "Basic microservice to import data from a CSV file and store it in a database",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "lint": "eslint src"
+    "lint": "eslint src tests"
   },
   "keywords": [],
   "author": "Alejandro Ruiz Salazar",
@@ -26,11 +26,14 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.1",
     "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.1",
     "@typescript-eslint/eslint-plugin": "^8.65.0",
     "@typescript-eslint/parser": "^8.65.0",
     "drizzle-kit": "^0.31.10",
-    "eslint": "^10.7.0",
+    "eslint": "^10.0.0",
+    "supertest": "^7.2.2",
     "tsx": "^4.23.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
   }
 }

@@ -37,6 +37,11 @@ jobs:
         working-directory: importer-service
         run: npm run build
 
+      # 6. Run tests
+      - name: Run tests with Vitest
+        working-directory: importer-service
+        run: npm run test
+
   query-service-ci:
     name: query-service CI
     runs-on: ubuntu-latest

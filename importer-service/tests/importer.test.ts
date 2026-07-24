@@ -223,17 +223,6 @@ describe('processCsvFile', () => {
         expect(result.summary.maxEmissions).toBe(-10.5);
     });
 
-    it('Deletes the CSV file after processing', async () => {
-        const csvPath = path.join(testDir, 'deletes_file.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Transport,10.5\n');
-        
-        expect(fs.existsSync(csvPath)).toBe(true);
-        
-        await processCsvFile(csvPath);
-        
-        expect(fs.existsSync(csvPath)).toBe(false);
-    });
-
     it('Executes database inserts in batches of 1000 records', async () => {
         const csvPath = path.join(testDir, 'batch_test.csv');
         

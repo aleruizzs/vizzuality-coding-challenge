@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { processCsvFile } from '../src/importer';
@@ -33,8 +33,8 @@ describe('processCsvFile', () => {
         mockValues.mockReturnValue({ execute: vi.fn().mockResolvedValue(true) });
   });
 
-    // Clean up the temporary directory after each test
-    afterEach(() => {
+    // Clean up the temporary directory after all tests
+    afterAll(() => {
         if (fs.existsSync(testDir)) {
             fs.rmSync(testDir, { recursive: true });
         }

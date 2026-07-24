@@ -4,7 +4,7 @@ import { checkDbConnection } from './database';
 import { config } from './config';
 import { processCsvFile } from './importer';
 
-const app = express();
+export const app = express();
 
 const upload = multer({ dest: 'uploads/' });
 

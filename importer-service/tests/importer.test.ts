@@ -169,7 +169,7 @@ describe('processCsvFile', () => {
     });
 
     it('Handles null values correctly for different values', async () => {
-        const csvPath = path.join(testDir, 'null_values.csv');
+        const csvPath = path.join(testDir, 'null_values_different.csv');
         fs.writeFileSync(
             csvPath,
             'Country,Sector,Parent Sector,1990,1991\n' +

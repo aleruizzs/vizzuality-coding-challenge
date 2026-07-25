@@ -49,12 +49,12 @@ async def get_emissions(
     query = select(Emission)
 
     # Apply the filtering
-    if country:
-        query = query.where(Emission.country.ilike(f"%{country.strip()}%"))
-    if sector:
-        query = query.where(Emission.sector.ilike(f"%{sector.strip()}%"))
-    if parent_sector:
-        query = query.where(Emission.parent_sector.ilike(f"%{parent_sector.strip()}%"))
+    if country and country.strip():
+        query = query.where(Emission.country.ilike(f"{country.strip()}%"))
+    if sector and sector.strip():
+        query = query.where(Emission.sector.ilike(f"{sector.strip()}%"))
+    if parent_sector and parent_sector.strip():
+        query = query.where(Emission.parent_sector.ilike(f"{parent_sector.strip()}%"))
     if year is not None:
         query = query.where(Emission.year == year)
     if value is not None:
@@ -78,6 +78,7 @@ async def get_emissions(
     # Create the sorting clauses
     sort_clauses: list[Any] = []
     requested_fields = [f.strip() for f in sort_by.split(",") if f.strip()]
+    id_requested = False
 
     # Check if the requested fields are valid and add them to the sorting clauses
     for field in requested_fields:
@@ -92,13 +93,16 @@ async def get_emissions(
                     f"Allowed fields: {list(allowed_sort_fields.keys())}"
                 ),
             )
+        if clean_field_name == "id":
+            id_requested = True
 
         col = allowed_sort_fields[clean_field_name]
         sort_clauses.append(desc(col) if is_desc else asc(col))
 
     # Apply the sorting
-    if sort_clauses:
-        query = query.order_by(*sort_clauses)
+    if not id_requested:
+        sort_clauses.append(asc(Emission.id))
+    query = query.order_by(*sort_clauses)
 
     # Calculate the offset and limit
     offset = (page - 1) * limit
@@ -107,7 +111,6 @@ async def get_emissions(
     # Execute the query and return the results
     result = await db.execute(query)
     emissions = list(result.scalars().all())
-    emissions_data = [EmissionResponse.model_validate(e) for e in emissions]
 
     total_pages = math.ceil(total / limit) if total > 0 else 0
 
@@ -116,5 +119,5 @@ async def get_emissions(
         page=page,
         limit=limit,
         total_pages=total_pages,
-        data=emissions_data,
+        data=emissions,
     )

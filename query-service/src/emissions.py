@@ -9,6 +9,7 @@ from src.schemas import PaginatedEmissionResponse
 from src.database import get_db
 from src.models import Emission
 
+
 async def get_emissions(
     # Optional parameters for filtering
     country: Optional[str] = Query(None),

@@ -30,7 +30,7 @@ def health_check():
 
 
 @app.get("/emissions", response_model=PaginatedEmissionResponse)
-async def emissions(    
+async def emissions(
     # Optional parameters for filtering
     country: Optional[str] = Query(None),
     sector: Optional[str] = Query(None),
@@ -48,7 +48,9 @@ async def emissions(
     ),
     db: AsyncSession = Depends(get_db),
 ):
-    return await get_emissions(country, sector, parent_sector, year, value, page, limit, sort_by, db)
+    return await get_emissions(
+        country, sector, parent_sector, year, value, page, limit, sort_by, db
+    )
 
 
 @app.get("/status", response_model=StatusResponse)

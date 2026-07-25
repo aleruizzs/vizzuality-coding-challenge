@@ -20,5 +20,8 @@ class Settings:
         f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     )
 
+    SERVICE_NAME: str = "query-service"
+    SCHEMA_VERSION: str = "1.0.0"
+
 
 settings = Settings()

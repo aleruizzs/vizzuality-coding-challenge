@@ -21,3 +21,11 @@ class PaginatedEmissionResponse(BaseModel):
     limit: int
     total_pages: int
     data: Sequence[EmissionResponse]
+
+
+# Schema for the response of the service status
+class StatusResponse(BaseModel):
+    service: str
+    status: str
+    total_records: int
+    schema_version: str

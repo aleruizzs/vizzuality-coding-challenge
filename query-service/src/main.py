@@ -7,9 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
 from src.database import check_db_connection, engine
-from src.schemas import PaginatedEmissionResponse
+from src.schemas import PaginatedEmissionResponse, StatusResponse
 from src.database import get_db
 from src.models import Emission
+from src.config import settings
 
 
 @asynccontextmanager
@@ -24,7 +25,7 @@ app = FastAPI(title="Environmental Data Query API", lifespan=lifespan)
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "query-service"}
+    return {"status": "ok", "service": settings.SERVICE_NAME}
 
 
 @app.get("/emissions", response_model=PaginatedEmissionResponse)
@@ -120,4 +121,17 @@ async def get_emissions(
         limit=limit,
         total_pages=total_pages,
         data=emissions,
+    )
+
+
+@app.get("/status", response_model=StatusResponse)
+async def get_status(db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(func.count()).select_from(Emission))
+    total_records = result.scalar() or 0
+
+    return StatusResponse(
+        service=settings.SERVICE_NAME,
+        status="ok",
+        total_records=total_records,
+        schema_version=settings.SCHEMA_VERSION,
     )

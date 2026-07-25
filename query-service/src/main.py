@@ -50,11 +50,11 @@ async def get_emissions(
 
     # Apply the filtering
     if country:
-        query = query.where(Emission.country.ilike(f"%{country}%"))
+        query = query.where(Emission.country.ilike(f"%{country.strip()}%"))
     if sector:
-        query = query.where(Emission.sector.ilike(f"%{sector}%"))
+        query = query.where(Emission.sector.ilike(f"%{sector.strip()}%"))
     if parent_sector:
-        query = query.where(Emission.parent_sector.ilike(f"%{parent_sector}%"))
+        query = query.where(Emission.parent_sector.ilike(f"%{parent_sector.strip()}%"))
     if year is not None:
         query = query.where(Emission.year == year)
     if value is not None:
@@ -87,8 +87,10 @@ async def get_emissions(
         if clean_field_name not in allowed_sort_fields:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid sort field '{clean_field_name}'. \
-                Allowed fields: {list(allowed_sort_fields.keys())}",
+                detail=(
+                    f"Invalid sort field '{clean_field_name}'. "
+                    f"Allowed fields: {list(allowed_sort_fields.keys())}"
+                ),
             )
 
         col = allowed_sort_fields[clean_field_name]

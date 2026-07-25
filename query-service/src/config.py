@@ -16,9 +16,12 @@ class Settings:
     POSTGRES_DB: str = require_env("POSTGRES_DB")
 
     DATABASE_URL: str = (
-        f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
+        f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
         f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     )
+
+    SERVICE_NAME: str = "query-service"
+    SCHEMA_VERSION: str = "1.0.0"
 
 
 settings = Settings()

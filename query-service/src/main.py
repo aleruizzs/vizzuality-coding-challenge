@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
 from src.database import check_db_connection, engine
-from src.schemas import EmissionResponse, PaginatedEmissionResponse
+from src.schemas import PaginatedEmissionResponse
 from src.database import get_db
 from src.models import Emission
 

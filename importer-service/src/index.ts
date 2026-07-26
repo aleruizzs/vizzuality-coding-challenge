@@ -24,7 +24,7 @@ app.post('/upload', upload.single('file'), async (req: Request, res: Response) =
 
   try {
     const message = await processCsvFile(req.file.path);
-    
+
     return res.status(200).json({
       message: 'File uploaded and processed successfully',
       details: message,

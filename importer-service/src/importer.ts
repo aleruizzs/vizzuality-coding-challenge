@@ -1,7 +1,7 @@
 import csv from 'csv-parser';
 import fs from 'fs';
-import { db } from './database';
-import { emissions } from './schema';
+import { db } from './database.js';
+import { emissions } from './schema.js';
 
 // Basic interface for an emission row
 interface EmissionRow {
@@ -15,9 +15,19 @@ interface EmissionRow {
 const COUNTRY_COLUMN = 'Country', SECTOR_COLUMN = 'Sector', PARENT_SECTOR_COLUMN = 'Parent Sector';
 const BATCH_SIZE = 1000;
 
+// Interface for the result of the processCsvFile function
+export interface ProcessCsvResult {
+  message: string;
+  summary: {
+    totalRecords: number;
+    skippedRows: number;
+    skippedValues: number;
+    minEmissions: number | null;
+    maxEmissions: number | null;
+  };
+}
 
-export async function processCsvFile(filePath: string){
-    let rowsToInsert: EmissionRow[] = [];
+export async function processCsvFile(filePath: string): Promise<ProcessCsvResult> {
     let totalInserted = 0;
     let skippedRows = 0;
     let skippedValues = 0;
@@ -30,73 +40,77 @@ export async function processCsvFile(filePath: string){
     try {
         fileStream = fs.createReadStream(filePath);
         csvStream = fileStream.pipe(csv());
+        const stream = csvStream;
 
-        // Read the CSV file and parse each row
-        for await (const row of csvStream) {
-            // Extract the country, sector, and parent sector from the row
-            const country = row[COUNTRY_COLUMN]?.trim();
-            const sector = row[SECTOR_COLUMN]?.trim();
-            const parentSector = row[PARENT_SECTOR_COLUMN]?.trim() || null;
+        await db.transaction(async (tx) => {
+            let rowsToInsert: EmissionRow[] = [];
 
-            // Skip rows that don't have a valid country or sector, since these are mandatory fields
-            if (!country || !sector) {
-                skippedRows++;
-                continue;
-            }
+            // Read the CSV file and parse each row
+            for await (const row of stream) {
+                // Extract the country, sector, and parent sector from the row
+                const country = row[COUNTRY_COLUMN]?.trim();
+                const sector = row[SECTOR_COLUMN]?.trim();
+                const parentSector = row[PARENT_SECTOR_COLUMN]?.trim() || null;
 
-            // Iterate over the keys of the row to find year columns and their corresponding values
-            for (const year of Object.keys(row)) {
-                if (year !== COUNTRY_COLUMN && year !== SECTOR_COLUMN && year !== PARENT_SECTOR_COLUMN) {
-                    // Ensure the year is a valid number before processing
-                    const yearNum = parseInt(year?.trim(), 10);
-                    if (!isNaN(yearNum)) {
-                        const rawValue = row[year]?.trim();
-                        const parsedValue = parseFloat(rawValue);
+                // Skip rows that don't have a valid country or sector, since these are mandatory fields
+                if (!country || !sector) {
+                    skippedRows++;
+                    continue;
+                }
 
-                        // If the value is not a valid number, set it to null
-                        const value = rawValue !== undefined && rawValue !== '' && !isNaN(parsedValue) 
-                        ? parsedValue
-                        : null;
+                // Iterate over the keys of the row to find year columns and their corresponding values
+                for (const year of Object.keys(row)) {
+                    if (year !== COUNTRY_COLUMN && year !== SECTOR_COLUMN && year !== PARENT_SECTOR_COLUMN) {
+                        // Ensure the year is a valid number before processing
+                        const yearNum = parseInt(year?.trim(), 10);
+                        if (!isNaN(yearNum)) {
+                            const rawValue = row[year]?.trim();
+                            const parsedValue = parseFloat(rawValue);
 
-                        // Update min and max values
-                        if (value !== null) {
-                            if (minVal === null || value < minVal)  minVal = value;
-                            if (maxVal === null || value > maxVal) maxVal = value;
+                            // If the value is not a valid number, set it to null
+                            const value = rawValue !== undefined && rawValue !== '' && !isNaN(parsedValue) 
+                            ? parsedValue
+                            : null;
+
+                            // Update min and max values
+                            if (value !== null) {
+                                if (minVal === null || value < minVal)  minVal = value;
+                                if (maxVal === null || value > maxVal) maxVal = value;
+                            }
+                            // If this row has a valid year but the value is invalid, we skip it and increment the skippedValues counter
+                            else {
+                                skippedValues++;
+                                continue;
+                            }
+
+                            rowsToInsert.push({
+                                country,
+                                sector,
+                                parentSector,
+                                year: yearNum,
+                                value,
+                            });
                         }
-                        // If this row has a valid year but the value is invalid, we skip it and increment the skippedValues counter
-                        else {
-                            skippedValues++;
-                            continue;
-                        }
-
-                        rowsToInsert.push({
-                            country,
-                            sector,
-                            parentSector,
-                            year: yearNum,
-                            value,
-                        });
                     }
                 }
+
+                // If the number of rows to insert reaches the batch size, pause the stream to process the current batch
+                if (rowsToInsert.length >= BATCH_SIZE){
+                    // Free up memory by inserting the current batch into the database
+                    const batch = rowsToInsert;
+                    rowsToInsert = [];
+
+                    await tx.insert(emissions).values(batch);
+                    totalInserted += batch.length;
+                    }
             }
 
-            // If the number of rows to insert reaches the batch size, pause the stream to process the current batch
-            if (rowsToInsert.length >= BATCH_SIZE){
-                // Free up memory by inserting the current batch into the database
-                const batch = rowsToInsert;
-                rowsToInsert = [];
-
-                await db.insert(emissions).values(batch);
-                totalInserted += batch.length;
-                }
-        }
-
-        // Insert any remaining rows that didn't fill a complete batch
-        if (rowsToInsert.length > 0) {
-            await db.insert(emissions).values(rowsToInsert);
-            totalInserted += rowsToInsert.length;
-        }
-
+            // Insert any remaining rows that didn't fill a complete batch
+            if (rowsToInsert.length > 0) {
+                await tx.insert(emissions).values(rowsToInsert);
+                totalInserted += rowsToInsert.length;
+            }
+        });
         return{
             message: 'CSV file data saved successfully.',
             summary: {

@@ -82,14 +82,14 @@ export async function processCsvFile(filePath: string){
                 const batch = rowsToInsert;
                 rowsToInsert = [];
 
-                await db.insert(emissions).values(batch).execute();
+                await db.insert(emissions).values(batch);
                 totalInserted += batch.length;
                 }
         }
 
         // Insert any remaining rows that didn't fill a complete batch
         if (rowsToInsert.length > 0) {
-            await db.insert(emissions).values(rowsToInsert).execute();
+            await db.insert(emissions).values(rowsToInsert);
             totalInserted += rowsToInsert.length;
         }
 

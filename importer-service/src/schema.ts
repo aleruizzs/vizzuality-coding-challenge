@@ -6,9 +6,10 @@ export const emissions = pgTable('emissions', {
     sector: varchar('sector', { length: 255 }).notNull(),
     parentSector: varchar('parent_sector', { length: 255 }),
     year: integer('year').notNull(),
-    value: doublePrecision('value'),
+    value: doublePrecision('value').notNull(),
 }, (table) => [
     index('idx_emissions_country').on(table.country),
     index('idx_emissions_sector').on(table.sector),
     index('idx_emissions_parent_sector').on(table.parentSector),
+    index('idx_emissions_year').on(table.year),
 ]);

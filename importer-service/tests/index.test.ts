@@ -67,6 +67,7 @@ describe('HTTP Endpoints', () => {
                 summary: {
                     totalRecords: 5,
                     skippedRows: 0,
+                    skippedValues: 0,
                     minEmissions: 10.5,
                     maxEmissions: 50.0,
                 },

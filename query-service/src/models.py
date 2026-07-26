@@ -18,4 +18,4 @@ class Emission(Base):
         String(255), index=True, nullable=True
     )
     year: Mapped[int] = mapped_column(Integer, nullable=False)
-    value: Mapped[Optional[float]] = mapped_column(Double, nullable=True)
+    value: Mapped[Optional[float]] = mapped_column(Double, nullable=False)

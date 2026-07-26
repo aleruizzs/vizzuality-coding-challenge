@@ -1,6 +1,7 @@
 {
   "name": "importer-service",
   "version": "1.0.0",
+  "type": "module",
   "description": "Basic microservice to import data from a CSV file and store it in a database",
   "main": "index.js",
   "scripts": {

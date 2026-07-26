@@ -24,11 +24,15 @@ export async function processCsvFile(filePath: string){
     let minVal: number | null = null;
     let maxVal: number | null = null;
 
+    let fileStream: fs.ReadStream | null = null;
+    let csvStream: ReturnType<typeof csv> | null = null;
+
     try {
-        const stream = fs.createReadStream(filePath).pipe(csv());
+        fileStream = fs.createReadStream(filePath);
+        csvStream = fileStream.pipe(csv());
 
         // Read the CSV file and parse each row
-        for await (const row of stream) {
+        for await (const row of csvStream) {
             // Extract the country, sector, and parent sector from the row
             const country = row[COUNTRY_COLUMN]?.trim();
             const sector = row[SECTOR_COLUMN]?.trim();
@@ -104,9 +108,21 @@ export async function processCsvFile(filePath: string){
             },
         };
     } finally {
-        // Clean up the uploaded file after processing, regardless of success or failure
+        // We need to destroy the stream to prevent memory leaks in case of errors
+        if (csvStream) {
+            csvStream.destroy();
+        }
+        if (fileStream) {
+            fileStream.destroy();
+        }
+
+        // Clean up the uploaded file after processing, regardless of success or failure.
         if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+            try {
+                fs.unlinkSync(filePath);
+            } catch (err) {
+                console.error(`Failed to delete temporary file ${filePath}:`, err);
+            }
         }
     }
 }

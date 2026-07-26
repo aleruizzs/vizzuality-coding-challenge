@@ -38,8 +38,8 @@ async def emissions(
     year: Annotated[Optional[int], Query()] = None,
     value: Annotated[Optional[float], Query()] = None,
     # Pagination parameters
-    page: Annotated[int, Query(1, ge=1)] = 1,
-    limit: Annotated[int, Query(20, ge=1, le=100)] = 20,
+    page: Annotated[int, Query(ge=1)] = 1,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
     # Sorting parameters
     sort_by: Annotated[
         str,

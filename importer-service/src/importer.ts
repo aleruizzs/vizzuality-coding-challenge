@@ -9,7 +9,7 @@ interface EmissionRow {
   sector: string;
   parentSector: string | null;
   year: number;
-  value: number | null;
+  value: number;
 }
 
 const COUNTRY_COLUMN = 'Country', SECTOR_COLUMN = 'Sector', PARENT_SECTOR_COLUMN = 'Parent Sector';

@@ -6,3 +6,9 @@ pydantic==2.13.4
 pydantic-settings==2.14.2
 flake8==7.3.0
 black==26.5.1
+pytest==9.1.1
+pytest-asyncio==1.4.0
+httpx==0.28.1
+aiosqlite==0.22.1
+pytest-env==1.7.0
+isort==8.0.1

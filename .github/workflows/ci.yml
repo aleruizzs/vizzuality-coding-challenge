@@ -72,3 +72,13 @@ jobs:
       - name: Check code style with Flake8
         working-directory: query-service
         run: flake8 src
+
+      # 6. Check import sorting
+      - name: Check import sorting with isort
+        working-directory: query-service
+        run: isort . --check-only --diff --profile black
+
+      # 7. Run tests
+      - name: Run tests with Pytest
+        working-directory: query-service
+        run: python3 -m pytest

@@ -34,13 +34,19 @@ async def get_emissions(
 
     # Apply the filtering
     if country and country.strip():
-        query = query.where(Emission.country.istartswith(country.strip(), autoescape=True))
+        query = query.where(
+            Emission.country.istartswith(country.strip(), autoescape=True)
+        )
 
-    if sector and  sector.strip():
-        query = query.where(Emission.sector.istartswith(sector.strip(), autoescape=True))
+    if sector and sector.strip():
+        query = query.where(
+            Emission.sector.istartswith(sector.strip(), autoescape=True)
+        )
 
     if parent_sector and parent_sector.strip():
-        query = query.where(Emission.parent_sector.istartswith(parent_sector.strip(), autoescape=True))
+        query = query.where(
+            Emission.parent_sector.istartswith(parent_sector.strip(), autoescape=True)
+        )
 
     if year is not None:
         query = query.where(Emission.year == year)

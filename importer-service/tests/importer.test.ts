@@ -50,6 +50,7 @@ describe('processCsvFile', () => {
         expect(result).toHaveProperty('summary');
         expect(result.summary).toHaveProperty('totalRecords');
         expect(result.summary).toHaveProperty('skippedRows');
+        expect(result.summary).toHaveProperty('skippedValues');
         expect(result.summary).toHaveProperty('minEmissions');
         expect(result.summary).toHaveProperty('maxEmissions');
     });
@@ -165,7 +166,8 @@ describe('processCsvFile', () => {
         expect(result.summary.minEmissions).toBeNull();
         expect(result.summary.maxEmissions).toBeNull();
         expect(result.summary.totalRecords).toBe(0);
-        expect(result.summary.skippedRows).toBe(1);
+        expect(result.summary.skippedRows).toBe(0);
+        expect(result.summary.skippedValues).toBe(1);
     });
 
     it('Handles null values correctly for different values', async () => {
@@ -180,7 +182,7 @@ describe('processCsvFile', () => {
         const result = await processCsvFile(csvPath);
         
         expect(result.summary.totalRecords).toBe(2);
-        expect(result.summary.skippedRows).toBe(2);
+        expect(result.summary.skippedValues).toBe(2);
     });
 
     it('Handles wrong year values correctly', async () => {
@@ -191,6 +193,7 @@ describe('processCsvFile', () => {
         
         expect(result.summary.minEmissions).toBeNull();
         expect(result.summary.maxEmissions).toBeNull();
+        expect(result.summary.skippedValues).toBe(1);
     });
 
     it('Calculates minEmissions and maxEmissions correctly', async () => {
@@ -211,6 +214,7 @@ describe('processCsvFile', () => {
         
         expect(result.summary.minEmissions).toBe(0);
         expect(result.summary.maxEmissions).toBe(0);
+        expect(result.summary.skippedValues).toBe(0);
     });
 
     it('Handles negative emission values correctly for min/max', async () => {
@@ -221,6 +225,7 @@ describe('processCsvFile', () => {
 
         expect(result.summary.minEmissions).toBe(-50.0);
         expect(result.summary.maxEmissions).toBe(-10.5);
+        expect(result.summary.skippedValues).toBe(0);
     });
 
     it('Executes database inserts in batches of 1000 records', async () => {

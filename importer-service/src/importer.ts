@@ -20,6 +20,7 @@ export async function processCsvFile(filePath: string){
     let rowsToInsert: EmissionRow[] = [];
     let totalInserted = 0;
     let skippedRows = 0;
+    let skippedValues = 0;
     let minVal: number | null = null;
     let maxVal: number | null = null;
 
@@ -58,9 +59,9 @@ export async function processCsvFile(filePath: string){
                             if (minVal === null || value < minVal)  minVal = value;
                             if (maxVal === null || value > maxVal) maxVal = value;
                         }
-                        // If this row has a valid year but the value is invalid, we skip it and increment the skippedRows counter
+                        // If this row has a valid year but the value is invalid, we skip it and increment the skippedValues counter
                         else {
-                            skippedRows++;
+                            skippedValues++;
                             continue;
                         }
 
@@ -97,6 +98,7 @@ export async function processCsvFile(filePath: string){
             summary: {
                 totalRecords: totalInserted,
                 skippedRows: skippedRows,
+                skippedValues: skippedValues,
                 minEmissions: minVal,
                 maxEmissions: maxVal,
             },

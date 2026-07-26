@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sqlalchemy import func, select
 from fastapi import Query
-from typing import Optional
+from typing import Annotated, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
@@ -32,24 +32,34 @@ def health_check():
 @app.get("/emissions", response_model=PaginatedEmissionResponse)
 async def emissions(
     # Optional parameters for filtering
-    country: Optional[str] = Query(None),
-    sector: Optional[str] = Query(None),
-    parent_sector: Optional[str] = Query(None),
-    year: Optional[int] = Query(None),
-    value: Optional[float] = Query(None),
+    country: Annotated[Optional[str], Query()] = None,
+    sector: Annotated[Optional[str], Query()] = None,
+    parent_sector: Annotated[Optional[str], Query()] = None,
+    year: Annotated[Optional[int], Query()] = None,
+    value: Annotated[Optional[float], Query()] = None,
     # Pagination parameters
-    page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
+    page: Annotated[int, Query(1, ge=1)] = 1,
+    limit: Annotated[int, Query(20, ge=1, le=100)] = 20,
     # Sorting parameters
-    sort_by: str = Query(
-        "id",
-        description="Comma-separated fields to sort by. "
-        "Prefix with '-' for DESC (e.g. 'country,-year')",
-    ),
+    sort_by: Annotated[
+        str,
+        Query(
+            description="Comma-separated fields to sort by. "
+            "Prefix with '-' for DESC (e.g. 'country,-year')"
+        ),
+    ] = "id",
     db: AsyncSession = Depends(get_db),
 ):
     return await get_emissions(
-        country, sector, parent_sector, year, value, page, limit, sort_by, db
+        country=country,
+        sector=sector,
+        parent_sector=parent_sector,
+        year=year,
+        value=value,
+        page=page,
+        limit=limit,
+        sort_by=sort_by,
+        db=db,
     )
 
 

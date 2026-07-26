@@ -72,3 +72,8 @@ jobs:
       - name: Check code style with Flake8
         working-directory: query-service
         run: flake8 src
+
+        # 6. Run tests
+      - name: Run tests with Pytest
+        working-directory: query-service
+        run: python3 -m pytest

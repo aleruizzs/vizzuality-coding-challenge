@@ -1,8 +1,9 @@
+from unittest.mock import AsyncMock, patch
+
 import pytest_asyncio
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import StaticPool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from unittest.mock import AsyncMock, patch
-from httpx import ASGITransport, AsyncClient
 
 from src.database import get_db
 from src.main import app

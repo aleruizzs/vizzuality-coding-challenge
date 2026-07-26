@@ -1,7 +1,9 @@
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
 from src.schemas import PaginatedEmissionResponse
+
 
 @pytest.mark.asyncio
 async def test_health_check(client):
@@ -63,3 +65,8 @@ async def test_emissions_fastapi_validations(client):
 
     res_limit = await client.get("/emissions?limit=101")
     assert res_limit.status_code == 422
+
+@pytest.mark.asyncio
+async def test_emissions_wrong_sort_field(client):
+    res = await client.get("/emissions?sort_by=wrong_field")
+    assert res.status_code == 400

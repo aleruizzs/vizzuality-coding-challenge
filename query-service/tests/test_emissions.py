@@ -1,19 +1,19 @@
-import pytest
 from unittest.mock import AsyncMock
-from fastapi import HTTPException
+
+import pytest
 
 from src.emissions import get_emissions
 from src.models import Emission
+
 
 @pytest.mark.asyncio
 async def test_invalid_sort_field_raises_400():
     mock_db = AsyncMock()
 
-    with pytest.raises(HTTPException) as exc_info:
+    with pytest.raises(ValueError) as exc_info:
         await get_emissions(mock_db, sort_by="columna_inexistente")
 
-    assert exc_info.value.status_code == 400
-    assert "Invalid sort field 'columna_inexistente'" in exc_info.value.detail
+    assert "Invalid sort field 'columna_inexistente'" in str(exc_info.value)
 
     assert mock_db.execute.call_count == 0
 

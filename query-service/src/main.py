@@ -1,17 +1,15 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from sqlalchemy import func, select
-from fastapi import Query
 from typing import Annotated, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
 
-from src.database import check_db_connection, engine
-from src.schemas import PaginatedEmissionResponse, StatusResponse
-from src.database import get_db
-from src.models import Emission
+from fastapi import Depends, FastAPI, HTTPException, Query
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.config import settings
+from src.database import check_db_connection, engine, get_db
 from src.emissions import get_emissions
+from src.models import Emission
+from src.schemas import PaginatedEmissionResponse, StatusResponse
 
 
 @asynccontextmanager
@@ -50,17 +48,20 @@ async def emissions(
     ] = "id",
     db: AsyncSession = Depends(get_db),
 ):
-    return await get_emissions(
-        country=country,
-        sector=sector,
-        parent_sector=parent_sector,
-        year=year,
-        value=value,
-        page=page,
-        limit=limit,
-        sort_by=sort_by,
-        db=db,
-    )
+    try:
+        return await get_emissions(
+            country=country,
+            sector=sector,
+            parent_sector=parent_sector,
+            year=year,
+            value=value,
+            page=page,
+            limit=limit,
+            sort_by=sort_by,
+            db=db,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @app.get("/status", response_model=StatusResponse)

@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, integer, doublePrecision, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, varchar, integer, doublePrecision, index, unique } from 'drizzle-orm/pg-core';
 
 export const emissions = pgTable('emissions', {
     id: serial('id').primaryKey(),
@@ -12,4 +12,6 @@ export const emissions = pgTable('emissions', {
     index('idx_emissions_sector').on(table.sector),
     index('idx_emissions_parent_sector').on(table.parentSector),
     index('idx_emissions_year').on(table.year),
+
+    unique('unique_country_sector_year').on(table.country, table.sector, table.year),
 ]);

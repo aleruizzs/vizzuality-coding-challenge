@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS emissions (
     sector VARCHAR(255) NOT NULL,
     parent_sector VARCHAR(255),
     year INT NOT NULL,
-    value DOUBLE PRECISION NOT NULL
+    value DOUBLE PRECISION NOT NULL,
+    CONSTRAINT unique_country_sector_year UNIQUE (country, sector, year)
 );
 
 CREATE INDEX IF NOT EXISTS idx_emissions_country ON emissions(country);

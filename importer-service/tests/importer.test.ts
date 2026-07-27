@@ -4,10 +4,22 @@ import path from 'path';
 import { processCsvFile } from '../src/importer';
 
 
+interface BatchItem {
+    country: string;
+    sector: string;
+    year: number;
+}
+
 // Mock the database functions to avoid actual database operations during tests
 const { mockInsert, mockValues, mockTransaction } = vi.hoisted(() => {
     const mockExecute = vi.fn().mockResolvedValue(true);
-    const mockValues = vi.fn().mockReturnValue({ execute: mockExecute });
+    const mockReturning = vi.fn().mockResolvedValue([]);
+    const mockOnConflictDoNothing = vi.fn().mockReturnValue({ returning: mockReturning });
+    const mockValues = vi.fn().mockReturnValue({
+        execute: mockExecute,
+        onConflictDoNothing: mockOnConflictDoNothing,
+        returning: mockReturning,
+    });
     const mockInsert = vi.fn().mockReturnValue({ values: mockValues });
     const mockTransaction = vi.fn().mockImplementation((cb: (tx: { insert: typeof mockInsert }) => unknown) => cb({ insert: mockInsert }));
     return { mockInsert, mockValues, mockTransaction };
@@ -35,7 +47,23 @@ describe('processCsvFile', () => {
 
         mockTransaction.mockImplementation((cb: (tx: { insert: typeof mockInsert }) => unknown) => cb({ insert: mockInsert }));
         mockInsert.mockReturnValue({ values: mockValues });
-        mockValues.mockReturnValue({ execute: vi.fn().mockResolvedValue(true) });
+        mockValues.mockImplementation((batch: BatchItem[]) => {
+            const seen = new Set<string>();
+            const uniqueItems: BatchItem[] = [];
+            for (const item of batch) {
+                const key = `${item.country}-${item.sector}-${item.year}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueItems.push(item);
+                }
+            }
+            const mockReturning = vi.fn().mockResolvedValue(uniqueItems.map((_, i) => ({ id: i + 1 })));
+            return {
+                execute: vi.fn().mockResolvedValue(true),
+                onConflictDoNothing: vi.fn().mockReturnValue({ returning: mockReturning }),
+                returning: mockReturning,
+            };
+        });
     });
 
     // Clean up the temporary directory after all tests
@@ -56,6 +84,7 @@ describe('processCsvFile', () => {
         expect(result.summary).toHaveProperty('totalRecords');
         expect(result.summary).toHaveProperty('skippedRows');
         expect(result.summary).toHaveProperty('skippedValues');
+        expect(result.summary).toHaveProperty('duplicateValues');
         expect(result.summary).toHaveProperty('minEmissions');
         expect(result.summary).toHaveProperty('maxEmissions');
     });
@@ -231,6 +260,18 @@ describe('processCsvFile', () => {
         expect(result.summary.minEmissions).toBe(-50.0);
         expect(result.summary.maxEmissions).toBe(-10.5);
         expect(result.summary.skippedValues).toBe(0);
+    });
+
+    it('Handles duplicate values correctly', async () => {
+        const csvPath = path.join(testDir, 'duplicate_values.csv');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990' +
+            '\nSpain,Transport,Transport,10.5' +
+            '\nSpain,Transport,Transport,10.5');
+
+        const result = await processCsvFile(csvPath);
+
+        expect(result.summary.totalRecords).toBe(1);
+        expect(result.summary.duplicateValues).toBe(1);
     });
 
     it('Executes database inserts in batches of 1000 records', async () => {

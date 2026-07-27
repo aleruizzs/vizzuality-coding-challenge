@@ -46,6 +46,7 @@ curl -X POST "http://localhost:3000/upload" -F "file=@data/emissions.csv"
       "totalRecords": 87500,
       "skippedRows": 0,
       "skippedValues": 0,
+      "duplicateValues": 0,
       "minEmissions": 0.0,
       "maxEmissions": 14205.32
     }
@@ -91,9 +92,10 @@ Interactive API documentation is available at **`http://localhost:8000/docs`** (
 ## Design & Performance Decisions
 
 1. **Streaming & Batch Processing**: Node.js streams process CSV rows line-by-line. Records are inserted in batches within SQL transactions to maximize write throughput.
-2. **Resource Lifecycle**: `Multer` buffers files which are automatically deleted after processing.
-3. **Database Indexing**: Pre-configured B-Tree indexes on `country`, `sector`, `parent_sector`, and `year` eliminate full table scans for sub-millisecond query responses.
-4. **Async Non-Blocking API**: Built with FastAPI, AsyncSQLAlchemy, and `asyncpg` to serve high concurrency read requests without blocking the event loop.
+2. **Idempotency & Data Integrity**: Composite `UNIQUE (country, sector, year)` constraint paired with Drizzle's `ON CONFLICT DO NOTHING` prevents duplicate record ingestion on repeated imports.
+3. **Resource Lifecycle**: `Multer` buffers files which are automatically deleted after processing.
+4. **Database Indexing**: Pre-configured B-Tree indexes on `country`, `sector`, `parent_sector`, and `year` eliminate full table scans for sub-millisecond query responses.
+5. **Async Non-Blocking API**: Built with FastAPI, AsyncSQLAlchemy, and `asyncpg` to serve high concurrency read requests without blocking the event loop.
 
 ---
 

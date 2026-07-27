@@ -1,36 +1,38 @@
 import csv from 'csv-parser';
 import fs from 'fs';
-import { db } from './database.js';
-import { emissions } from './schema.js';
+import { db } from './database';
+import { emissions } from './schema';
 
 // Basic interface for an emission row
 interface EmissionRow {
-  country: string;
-  sector: string;
-  parentSector: string | null;
-  year: number;
-  value: number;
+    country: string;
+    sector: string;
+    parentSector: string | null;
+    year: number;
+    value: number;
 }
 
-const COUNTRY_COLUMN = 'Country', SECTOR_COLUMN = 'Sector', PARENT_SECTOR_COLUMN = 'Parent Sector';
+const COUNTRY_COLUMN = 'Country', SECTOR_COLUMN = 'Sector', PARENT_SECTOR_COLUMN = 'Parent sector';
 const BATCH_SIZE = 1000;
 
-// Interface for the result of the processCsvFile function
+
 export interface ProcessCsvResult {
-  message: string;
-  summary: {
-    totalRecords: number;
-    skippedRows: number;
-    skippedValues: number;
-    minEmissions: number | null;
-    maxEmissions: number | null;
-  };
+    message: string;
+    summary: {
+        totalRecords: number;
+        skippedRows: number;
+        skippedValues: number;
+        duplicateValues: number;
+        minEmissions: number | null;
+        maxEmissions: number | null;
+    };
 }
 
 export async function processCsvFile(filePath: string): Promise<ProcessCsvResult> {
     let totalInserted = 0;
     let skippedRows = 0;
     let skippedValues = 0;
+    let duplicateValues = 0;
     let minVal: number | null = null;
     let maxVal: number | null = null;
 
@@ -68,13 +70,13 @@ export async function processCsvFile(filePath: string): Promise<ProcessCsvResult
                             const parsedValue = parseFloat(rawValue);
 
                             // If the value is not a valid number, set it to null
-                            const value = rawValue !== undefined && rawValue !== '' && !isNaN(parsedValue) 
-                            ? parsedValue
-                            : null;
+                            const value = rawValue !== undefined && rawValue !== '' && !isNaN(parsedValue)
+                                ? parsedValue
+                                : null;
 
                             // Update min and max values
                             if (value !== null) {
-                                if (minVal === null || value < minVal)  minVal = value;
+                                if (minVal === null || value < minVal) minVal = value;
                                 if (maxVal === null || value > maxVal) maxVal = value;
                             }
                             // If this row has a valid year but the value is invalid, we skip it and increment the skippedValues counter
@@ -95,28 +97,35 @@ export async function processCsvFile(filePath: string): Promise<ProcessCsvResult
                 }
 
                 // If the number of rows to insert reaches the batch size, pause the stream to process the current batch
-                if (rowsToInsert.length >= BATCH_SIZE){
+                if (rowsToInsert.length >= BATCH_SIZE) {
                     // Free up memory by inserting the current batch into the database
                     const batch = rowsToInsert;
                     rowsToInsert = [];
 
-                    await tx.insert(emissions).values(batch);
-                    totalInserted += batch.length;
-                    }
+                    const inserted = await tx.insert(emissions).values(batch).onConflictDoNothing({
+                        target: [emissions.country, emissions.sector, emissions.parentSector, emissions.year],
+                    }).returning({ id: emissions.id });
+                    totalInserted += inserted.length;
+                    duplicateValues += batch.length - inserted.length;
+                }
             }
 
             // Insert any remaining rows that didn't fill a complete batch
             if (rowsToInsert.length > 0) {
-                await tx.insert(emissions).values(rowsToInsert);
-                totalInserted += rowsToInsert.length;
+                const inserted = await tx.insert(emissions).values(rowsToInsert).onConflictDoNothing({
+                    target: [emissions.country, emissions.sector, emissions.parentSector, emissions.year],
+                }).returning({ id: emissions.id });
+                totalInserted += inserted.length;
+                duplicateValues += rowsToInsert.length - inserted.length;
             }
         });
-        return{
+        return {
             message: 'CSV file data saved successfully.',
             summary: {
                 totalRecords: totalInserted,
                 skippedRows: skippedRows,
                 skippedValues: skippedValues,
+                duplicateValues: duplicateValues,
                 minEmissions: minVal,
                 maxEmissions: maxVal,
             },

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from sqlalchemy import Double, Integer, String
+from sqlalchemy import Double, Integer, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -10,6 +10,15 @@ class Base(DeclarativeBase):
 
 class Emission(Base):
     __tablename__ = "emissions"
+    __table_args__ = (
+        UniqueConstraint(
+            "country",
+            "sector",
+            "parent_sector",
+            "year",
+            name="unique_country_sector_year",
+        ),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     country: Mapped[str] = mapped_column(String(255), index=True, nullable=False)

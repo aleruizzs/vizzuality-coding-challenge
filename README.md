@@ -12,7 +12,7 @@ This is my attempt to build a high-performance, containerized microservices plat
 
 ---
 
-## 🏗 Architecture & Tech Stack
+## Architecture & Tech Stack
 
 The platform consists of two decoupled microservices sharing a PostgreSQL database:
 
@@ -25,7 +25,7 @@ The platform consists of two decoupled microservices sharing a PostgreSQL databa
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
 ### 1. Launch with Docker Compose
 ```bash
@@ -66,7 +66,7 @@ Interactive API documentation is available at **`http://localhost:8000/docs`** (
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### 1. Importer Service (`Port 3000`)
 - **`GET /health`**: Healthcheck endpoint (`{"status": "ok"}`).
@@ -88,7 +88,7 @@ Interactive API documentation is available at **`http://localhost:8000/docs`** (
 
 ---
 
-## ⚡ Design & Performance Decisions
+## Design & Performance Decisions
 
 1. **Streaming & Batch Processing**: Node.js streams process CSV rows line-by-line. Records are inserted in batches within SQL transactions to maximize write throughput.
 2. **Resource Lifecycle**: `Multer` buffers files which are automatically deleted after processing.
@@ -97,7 +97,7 @@ Interactive API documentation is available at **`http://localhost:8000/docs`** (
 
 ---
 
-## 🧪 Testing & CI/CD
+## Testing & CI/CD
 
 ### Local Testing
 ```bash
@@ -117,7 +117,7 @@ Automated pipeline (`.github/workflows/ci.yml`) runs linting, compilation checks
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 vizzuality-coding-challenge/
@@ -133,6 +133,3 @@ vizzuality-coding-challenge/
 > **Note on `.env`**: Included directly in repository for ease of evaluation in this coding challenge. In production environments, secrets should be excluded from version control and injected via a secret manager.
 
 ---
-
-### 📝 License
-Developed for the Vizzuality Engineering Assessment under the [MIT License](LICENSE).

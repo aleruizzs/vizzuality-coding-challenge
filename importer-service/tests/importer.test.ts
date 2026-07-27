@@ -76,7 +76,7 @@ describe('processCsvFile', () => {
 
     it('Returns the expected structure', async () => {
         const csvPath = path.join(testDir, 'returns_expected_structure.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Transport,10.5\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,Transport,10.5\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -93,7 +93,7 @@ describe('processCsvFile', () => {
     it('Processes multiple rows and years correctly', async () => {
         const csvPath = path.join(testDir, 'multiple_rows.csv');
         fs.writeFileSync(csvPath,
-            'Country,Sector,Parent Sector,1990,1991,1992\n' +
+            'Country,Sector,Parent sector,1990,1991,1992\n' +
             'Spain,Transport,Transport,1,2,3\n' +
             'France,Agriculture,Agriculture,4,5,6\n'
         );
@@ -105,7 +105,7 @@ describe('processCsvFile', () => {
 
     it('Inserts the exact mapped objects into the database', async () => {
         const csvPath = path.join(testDir, 'db_payload.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Energy,10.5\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,Energy,10.5\n');
 
         await processCsvFile(csvPath);
 
@@ -122,7 +122,7 @@ describe('processCsvFile', () => {
 
     it('Null country values are skipped', async () => {
         const csvPath = path.join(testDir, 'null_country.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990,1991\n,,Transport,Transport,10.5,20.0\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990,1991\n,,Transport,Transport,10.5,20.0\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -132,7 +132,7 @@ describe('processCsvFile', () => {
 
     it('Null sector values are skipped', async () => {
         const csvPath = path.join(testDir, 'null_sector.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990,1991\nSpain,,Transport,10.5,20.0\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990,1991\nSpain,,Transport,10.5,20.0\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -140,9 +140,9 @@ describe('processCsvFile', () => {
         expect(result.summary.skippedRows).toBe(1);
     });
 
-    it('Allows empty Parent Sector (null)', async () => {
+    it('Allows empty Parent sector (null)', async () => {
         const csvPath = path.join(testDir, 'allows_empty_parent_sector.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,,10.5\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,,10.5\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -151,7 +151,7 @@ describe('processCsvFile', () => {
 
     it('Values are trimmed', async () => {
         const csvPath = path.join(testDir, 'trimmed_values.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990,1991\n Spain , Transport , Transport , 10.5 ,    20.0 \n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990,1991\n Spain , Transport , Transport , 10.5 ,    20.0 \n');
 
         const result = await processCsvFile(csvPath);
 
@@ -176,7 +176,7 @@ describe('processCsvFile', () => {
 
     it('Years are parsed correctly', async () => {
         const csvPath = path.join(testDir, 'years_parsing.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990,1991\nSpain,Transport,Transport,10.5,20.0\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990,1991\nSpain,Transport,Transport,10.5,20.0\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -185,7 +185,7 @@ describe('processCsvFile', () => {
 
     it('Ignores non-year columns', async () => {
         const csvPath = path.join(testDir, 'non_year_columns.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990,InvalidYear\nSpain,Transport,Transport,10.5,abc\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990,InvalidYear\nSpain,Transport,Transport,10.5,abc\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -194,7 +194,7 @@ describe('processCsvFile', () => {
 
     it('Handles null year values correctly', async () => {
         const csvPath = path.join(testDir, 'null_values.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Transport,\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,Transport,\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -209,7 +209,7 @@ describe('processCsvFile', () => {
         const csvPath = path.join(testDir, 'null_values_different.csv');
         fs.writeFileSync(
             csvPath,
-            'Country,Sector,Parent Sector,1990,1991\n' +
+            'Country,Sector,Parent sector,1990,1991\n' +
             'Spain,Transport,Transport,,,\n' +
             'France,Agriculture,Agriculture,1,2,\n'
         );
@@ -222,7 +222,7 @@ describe('processCsvFile', () => {
 
     it('Handles wrong year values correctly', async () => {
         const csvPath = path.join(testDir, 'wrong_values.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Transport,abc\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,Transport,abc\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -233,7 +233,7 @@ describe('processCsvFile', () => {
 
     it('Calculates minEmissions and maxEmissions correctly', async () => {
         const csvPath = path.join(testDir, 'min_max_emissions.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990,1991\nSpain,Transport,Transport,5.0,25.0\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990,1991\nSpain,Transport,Transport,5.0,25.0\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -243,7 +243,7 @@ describe('processCsvFile', () => {
 
     it('Preserves zero values correctly', async () => {
         const csvPath = path.join(testDir, 'zero_values.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Transport,0\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,Transport,0\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -254,7 +254,7 @@ describe('processCsvFile', () => {
 
     it('Handles negative emission values correctly for min/max', async () => {
         const csvPath = path.join(testDir, 'negative_values.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990,1991\nSpain,Transport,Transport,-10.5,-50.0\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990,1991\nSpain,Transport,Transport,-10.5,-50.0\n');
 
         const result = await processCsvFile(csvPath);
 
@@ -265,7 +265,7 @@ describe('processCsvFile', () => {
 
     it('Handles duplicate values correctly', async () => {
         const csvPath = path.join(testDir, 'duplicate_values.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990' +
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990' +
             '\nSpain,Transport,Transport,10.5' +
             '\nSpain,Transport,Transport,10.5');
 
@@ -279,9 +279,9 @@ describe('processCsvFile', () => {
         const csvPath = path.join(testDir, 'batch_test.csv');
 
         const yearsHeader = Array.from({ length: 5 }, (_, i) => 2000 + i).join(',');
-        let content = `Country,Sector,Parent Sector,${yearsHeader}\n`;
+        let content = `Country,Sector,Parent sector,${yearsHeader}\n`;
         for (let i = 0; i < 240; i++) {
-            content += `Country${i},Sector${i},Parent Sector${i},10,20,30,40,50\n`;
+            content += `Country${i},Sector${i},Parent sector${i},10,20,30,40,50\n`;
         }
         fs.writeFileSync(csvPath, content);
 
@@ -293,7 +293,7 @@ describe('processCsvFile', () => {
 
     it('Deletes the CSV file after finishing', async () => {
         const csvPath = path.join(testDir, 'ends_deletes.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Transport,10.5\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,Transport,10.5\n');
 
         await processCsvFile(csvPath);
 
@@ -306,7 +306,7 @@ describe('processCsvFile', () => {
         });
 
         const csvPath = path.join(testDir, 'fails_and_deletes.csv');
-        fs.writeFileSync(csvPath, 'Country,Sector,Parent Sector,1990\nSpain,Transport,Transport,10.5\n');
+        fs.writeFileSync(csvPath, 'Country,Sector,Parent sector,1990\nSpain,Transport,Transport,10.5\n');
 
         await expect(processCsvFile(csvPath)).rejects.toThrow('Database connection lost');
 

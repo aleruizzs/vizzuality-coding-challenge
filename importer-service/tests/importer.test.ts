@@ -7,6 +7,7 @@ import { processCsvFile } from '../src/importer';
 interface BatchItem {
     country: string;
     sector: string;
+    parentSector: string;
     year: number;
 }
 
@@ -51,7 +52,7 @@ describe('processCsvFile', () => {
             const seen = new Set<string>();
             const uniqueItems: BatchItem[] = [];
             for (const item of batch) {
-                const key = `${item.country}-${item.sector}-${item.year}`;
+                const key = `${item.country}-${item.sector}-${item.parentSector}-${item.year}`;
                 if (!seen.has(key)) {
                     seen.add(key);
                     uniqueItems.push(item);

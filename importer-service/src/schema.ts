@@ -13,5 +13,5 @@ export const emissions = pgTable('emissions', {
     index('idx_emissions_parent_sector').on(table.parentSector),
     index('idx_emissions_year').on(table.year),
 
-    unique('unique_country_sector_year').on(table.country, table.sector, table.year),
+    unique('unique_country_sector_year').on(table.country, table.sector, table.parentSector, table.year),
 ]);

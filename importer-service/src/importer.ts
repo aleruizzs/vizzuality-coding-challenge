@@ -12,7 +12,7 @@ interface EmissionRow {
     value: number;
 }
 
-const COUNTRY_COLUMN = 'Country', SECTOR_COLUMN = 'Sector', PARENT_SECTOR_COLUMN = 'Parent Sector';
+const COUNTRY_COLUMN = 'Country', SECTOR_COLUMN = 'Sector', PARENT_SECTOR_COLUMN = 'Parent sector';
 const BATCH_SIZE = 1000;
 
 
@@ -50,9 +50,9 @@ export async function processCsvFile(filePath: string): Promise<ProcessCsvResult
             // Read the CSV file and parse each row
             for await (const row of stream) {
                 // Extract the country, sector, and parent sector from the row
-                const country = row[COUNTRY_COLUMN]?.trim();
-                const sector = row[SECTOR_COLUMN]?.trim();
-                const parentSector = row[PARENT_SECTOR_COLUMN]?.trim() || null;
+                const country = row['Country']?.trim();
+                const sector = row['Sector']?.trim();
+                const parentSector = (row['Parent sector'] ?? row['Parent Sector'])?.trim() || null;
 
                 // Skip rows that don't have a valid country or sector, since these are mandatory fields
                 if (!country || !sector) {
@@ -62,7 +62,7 @@ export async function processCsvFile(filePath: string): Promise<ProcessCsvResult
 
                 // Iterate over the keys of the row to find year columns and their corresponding values
                 for (const year of Object.keys(row)) {
-                    if (year !== COUNTRY_COLUMN && year !== SECTOR_COLUMN && year !== PARENT_SECTOR_COLUMN) {
+                    if (year !== 'Country' && year !== 'Sector' && year !== 'Parent sector' && year !== 'Parent Sector') {
                         // Ensure the year is a valid number before processing
                         const yearNum = parseInt(year?.trim(), 10);
                         if (!isNaN(yearNum)) {
@@ -103,7 +103,7 @@ export async function processCsvFile(filePath: string): Promise<ProcessCsvResult
                     rowsToInsert = [];
 
                     const inserted = await tx.insert(emissions).values(batch).onConflictDoNothing({
-                        target: [emissions.country, emissions.sector, emissions.year],
+                        target: [emissions.country, emissions.sector, emissions.parentSector, emissions.year],
                     }).returning({ id: emissions.id });
                     totalInserted += inserted.length;
                     duplicateValues += batch.length - inserted.length;
@@ -113,7 +113,7 @@ export async function processCsvFile(filePath: string): Promise<ProcessCsvResult
             // Insert any remaining rows that didn't fill a complete batch
             if (rowsToInsert.length > 0) {
                 const inserted = await tx.insert(emissions).values(rowsToInsert).onConflictDoNothing({
-                    target: [emissions.country, emissions.sector, emissions.year],
+                    target: [emissions.country, emissions.sector, emissions.parentSector, emissions.year],
                 }).returning({ id: emissions.id });
                 totalInserted += inserted.length;
                 duplicateValues += rowsToInsert.length - inserted.length;
